@@ -54,10 +54,6 @@
       <HintPath>..\packages\SC.Sitecore.Kernel.9.0.2\lib\Sitecore.Kernel.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Sitecore.Publishing.Service">
-      <HintPath>..\..\lib\Sitecore.Publishing.Service.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Sitecore.Publishing.Service.Abstractions">
       <HintPath>..\..\lib\Sitecore.Publishing.Service.Abstractions.dll</HintPath>
       <Private>False</Private>
