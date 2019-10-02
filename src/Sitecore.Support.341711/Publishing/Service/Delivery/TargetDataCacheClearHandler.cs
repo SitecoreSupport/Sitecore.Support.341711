@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sitecore.Abstractions;
 using Sitecore.Caching;
 using Sitecore.Caching.Generics;
+using Sitecore.Collections;
 using Sitecore.Data;
 using Sitecore.Data.DataProviders.Sql;
 using Sitecore.Data.Managers;
@@ -142,8 +143,7 @@ namespace Sitecore.Support.Publishing.Service.Delivery
             cacheManager.GetDeviceItemsCache().Clear();
 
             // PlaceholderCache
-            var placeholderManager = ServiceLocator.ServiceProvider.GetRequiredService<BasePlaceholderCacheManager>();
-            placeholderManager.GetPlaceholderCache(database.Name).Reload();
+            ClearPlaceholderCaches(database.Name);
 
             // RuleCache
             var ruleFactory = ServiceLocator.ServiceProvider.GetRequiredService<BaseRuleFactory>();
@@ -179,6 +179,33 @@ namespace Sitecore.Support.Publishing.Service.Delivery
             }
 
             return null;
+        }
+
+        private void ClearPlaceholderCaches(string databaseName)
+        {
+            var placeholderManager = ServiceLocator.ServiceProvider.GetRequiredService<BasePlaceholderCacheManager>();
+            var cache = placeholderManager.GetPlaceholderCache(databaseName);
+            var baseType = typeof(Sitecore.Caching.FieldRelatedItemCache);
+            var lockField = baseType.GetField("Lock", BindingFlags.Static | BindingFlags.NonPublic);
+            if (lockField != null)
+            {
+                var lockObject = lockField.GetValue(null);
+                if (lockObject != null)
+                {
+                    lock (lockObject)
+                    {
+                        var itemIDsField = baseType.GetField("itemIDs", BindingFlags.Instance | BindingFlags.NonPublic);
+                        if (itemIDsField != null)
+                        {
+                            var itemIDs = itemIDsField.GetValue(cache) as SafeDictionary<string, ID>;
+                            if (itemIDs != null)
+                            {
+                                itemIDs.Clear();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
